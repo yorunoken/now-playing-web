@@ -1,0 +1,14 @@
+{
+    "name": "nowplayingweb",
+    "module": "src/index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "bun --hot ."
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5.0.0"
+    }
+}
