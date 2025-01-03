@@ -1,6 +1,7 @@
 body {
     font-family: "Roboto", sans-serif;
     margin: 0;
+    color: var(--text-color);
 }
 
 .music-display {
@@ -8,13 +9,26 @@ body {
     border-radius: 16px;
     padding: 20px;
     width: 600px;
-    color: white;
+    color: var(--text-color);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+}
+
+.background-color {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    z-index: -1;
 }
 
 .album-art-container {
@@ -62,12 +76,12 @@ body {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 6px;
-    color: #ffffff;
+    color: var(--text-color);
 }
 
 .artist {
     font-size: 18px;
-    color: #b3b3b3;
+    color: var(--secondary-text-color);
     margin-bottom: 16px;
 }
 
@@ -75,7 +89,7 @@ body {
     display: flex;
     align-items: center;
     font-size: 14px;
-    color: #b3b3b3;
+    color: var(--secondary-text-color);
 }
 
 .progress-bar {

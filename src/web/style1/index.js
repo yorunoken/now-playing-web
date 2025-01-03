@@ -8,6 +8,9 @@ const albumArt = document.getElementById("album-art");
 const progressBar = document.getElementById("progress");
 const pauseOverlay = document.getElementById("pause-overlay");
 
+const musicDiv = document.getElementById("music-d");
+const bgDiv = document.getElementById("bg-color");
+
 function formatTime(ms) {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -57,6 +60,10 @@ function darkenColor({ r, g, b }, factor = 0.7) {
     };
 }
 
+function getBrightness({ r, g, b }) {
+    return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
 function getAverageColorFromUrl(imageUrl) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -87,6 +94,7 @@ async function refresh() {
 
     const albumAverageColor = await getAverageColorFromUrl(albumSrc);
     const albumDarkerColor = darkenColor(albumAverageColor);
+    const brightness = getBrightness(albumAverageColor);
 
     title.innerText = item.name || "-";
     artist.innerText = item.artists[0].name || "-";
@@ -94,11 +102,19 @@ async function refresh() {
     document.documentElement.style.setProperty("--album-color", `${albumAverageColor.r}, ${albumAverageColor.g}, ${albumAverageColor.b}`);
     document.documentElement.style.setProperty("--album-color-dark", `${albumDarkerColor.r}, ${albumDarkerColor.g}, ${albumDarkerColor.b}`);
 
+    const textColor = brightness > 128 ? "black" : "white";
+    const secondaryTextColor = brightness > 128 ? "#4d4d4d" : "#b3b3b3";
+    document.documentElement.style.setProperty("--text-color", textColor);
+    document.documentElement.style.setProperty("--secondary-text-color", secondaryTextColor);
+
     if (isPlaying) {
         pauseOverlay.classList.add("hidden");
     } else {
         pauseOverlay.classList.remove("hidden");
     }
+
+    bgDiv.style.width = `${musicDiv.offsetWidth}px`;
+    bgDiv.style.height = `${musicDiv.offsetHeight}px`;
 
     progressBarUpdate(currentPosition, totalDuration);
 }
