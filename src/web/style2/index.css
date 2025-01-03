@@ -4,17 +4,15 @@ body {
 }
 
 .music-display {
-    background: linear-gradient(to bottom, rgba(40, 40, 40, 0.95), rgba(40, 40, 40, 0.9));
+    background-color: #1e1e1e;
     border-radius: 16px;
-    padding: 20px;
+    padding: 24px;
     width: 600px;
-    color: white;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 .album-art-container {
@@ -26,7 +24,12 @@ body {
     width: 120px;
     height: 120px;
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.album-art:hover {
+    transform: scale(1.05);
 }
 
 .pause-overlay {
@@ -35,7 +38,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
     border-radius: 12px;
     display: flex;
     justify-content: center;
@@ -51,7 +54,7 @@ body {
 .pause-overlay svg {
     width: 40px;
     height: 40px;
-    fill: white;
+    fill: #ffffff;
 }
 
 .song-info {
@@ -60,8 +63,8 @@ body {
 
 .song-title {
     font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 6px;
+    font-weight: 700;
+    margin-bottom: 8px;
     color: #ffffff;
 }
 
