@@ -1,4 +1,6 @@
 import type { SpotifyState } from "./types";
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
+import { join } from "path";
 
 interface SpotifyTokenResponse {
     access_token: string;
@@ -11,6 +13,29 @@ export class Spotify {
     private static token: string | null = null;
     private static refreshToken: string | null = null;
     private static tokenExpiry: number = 0;
+    private static TOKEN_FILE = join(process.cwd(), ".spotify-token");
+
+    private static saveRefreshToken(token: string) {
+        writeFileSync(this.TOKEN_FILE, token);
+    }
+
+    private static loadRefreshToken(): string | null {
+        try {
+            if (existsSync(this.TOKEN_FILE)) {
+                return readFileSync(this.TOKEN_FILE, "utf-8");
+            }
+        } catch (error) {
+            console.error("Error loading refresh token:", error);
+        }
+        return null;
+    }
+
+    static initialize() {
+        const savedToken = this.loadRefreshToken();
+        if (savedToken) {
+            this.refreshToken = savedToken;
+        }
+    }
 
     static getAuthUrl(): string {
         const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -28,44 +53,56 @@ export class Spotify {
     }
 
     private static async getNewToken(code?: string): Promise<string> {
-        const clientId = process.env.SPOTIFY_CLIENT_ID;
-        const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-        const redirectUri = process.env.REDIRECT_URI;
+        try {
+            const clientId = process.env.SPOTIFY_CLIENT_ID;
+            const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+            const redirectUri = process.env.REDIRECT_URI;
 
-        if (!clientId || !clientSecret) {
-            throw new Error("Missing Spotify Credentials.");
+            if (!clientId || !clientSecret) {
+                throw new Error("Missing Spotify Credentials.");
+            }
+
+            const params = code
+                ? {
+                      grant_type: "authorization_code",
+                      code: code,
+                      redirect_uri: redirectUri,
+                  }
+                : {
+                      grant_type: "refresh_token",
+                      refresh_token: this.refreshToken!,
+                  };
+
+            const response = await fetch("https://accounts.spotify.com/api/token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    Authorization: "Basic " + Buffer.from(clientId + ":" + clientSecret).toString("base64"),
+                },
+                body: new URLSearchParams(params as any).toString(),
+            });
+
+            const data: SpotifyTokenResponse = await response.json();
+
+            this.token = data.access_token;
+            this.tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+
+            if (data.refresh_token) {
+                this.refreshToken = data.refresh_token;
+                this.saveRefreshToken(data.refresh_token);
+            }
+
+            return data.access_token;
+        } catch (error) {
+            if (!code) {
+                this.refreshToken = null;
+                if (existsSync(this.TOKEN_FILE)) {
+                    unlinkSync(this.TOKEN_FILE);
+                }
+                throw new Error("Invalid refresh token. User needs to authenticate.");
+            }
+            throw error;
         }
-
-        const params = code
-            ? {
-                  grant_type: "authorization_code",
-                  code: code,
-                  redirect_uri: redirectUri,
-              }
-            : {
-                  grant_type: "refresh_token",
-                  refresh_token: this.refreshToken!,
-              };
-
-        const response = await fetch("https://accounts.spotify.com/api/token", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                Authorization: "Basic " + Buffer.from(clientId + ":" + clientSecret).toString("base64"),
-            },
-            body: new URLSearchParams(params as any).toString(),
-        });
-
-        const data: SpotifyTokenResponse = await response.json();
-
-        this.token = data.access_token;
-        this.tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
-
-        if (data.refresh_token) {
-            this.refreshToken = data.refresh_token;
-        }
-
-        return data.access_token;
     }
 
     static async getToken(code?: string): Promise<string> {

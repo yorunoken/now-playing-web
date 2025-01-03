@@ -5,6 +5,8 @@ import { Spotify } from "./auth";
 const PORT = process.env.PORT;
 const key = process.env.SPOTIFY_KEY;
 
+Spotify.initialize();
+
 serve({
     port: PORT,
     async fetch(request) {
