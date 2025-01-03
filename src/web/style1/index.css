@@ -4,7 +4,7 @@ body {
 }
 
 .music-display {
-    background: linear-gradient(to bottom, rgba(50, 50, 50, 0.95), rgba(40, 40, 40, 0.9));
+    background: linear-gradient(to bottom, rgba(var(--album-color), 0.7), rgba(var(--album-color-dark), 0.6));
     border-radius: 16px;
     padding: 20px;
     width: 600px;
