@@ -13,6 +13,18 @@ serve({
         const { method } = request;
         const { pathname, searchParams } = new URL(request.url);
 
+        const corsHeaders = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        };
+
+        if (method === "OPTIONS") {
+            return new Response(null, {
+                headers: corsHeaders,
+            });
+        }
+
         if (method === "GET" && pathname === "/login") {
             const authUrl = Spotify.getAuthUrl();
             return Response.redirect(authUrl);
@@ -73,14 +85,37 @@ serve({
             });
         }
 
-        // const pathUserId = Number(pathname.slice(1));
+        const style = searchParams.get("style") ?? "1";
+
         if (pathname === "/") {
-            return new Response(Bun.file(import.meta.dir + "/web" + "/index.html"));
+            const file = Bun.file(import.meta.dir + `/web/style${style}/index.html`);
+            return new Response(file, {
+                headers: {
+                    "Content-Type": "text/html",
+                    ...corsHeaders,
+                },
+            });
         }
 
-        const staticFile = Bun.file(import.meta.dir + "/web" + pathname);
-        if (await staticFile.exists()) {
-            return new Response(staticFile);
+        const styleMatch = pathname.match(/^\/(style\d+)(\/.*)?$/);
+        if (styleMatch) {
+            const styleDir = styleMatch[1];
+            const filePath = import.meta.dir + `/web/${styleDir}` + (styleMatch[2] || "/index.html");
+            try {
+                const file = Bun.file(filePath);
+                if (await file.exists()) {
+                    const contentType = filePath.endsWith(".css") ? "text/css" : filePath.endsWith(".js") ? "application/javascript" : "text/html";
+
+                    return new Response(file, {
+                        headers: {
+                            "Content-Type": contentType,
+                            ...corsHeaders,
+                        },
+                    });
+                }
+            } catch (error) {
+                console.error("Error serving static file:", error);
+            }
         }
 
         return new Response("Not Found", { status: 404 });
